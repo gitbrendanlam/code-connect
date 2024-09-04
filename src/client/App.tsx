@@ -1,4 +1,5 @@
 import React from 'react';
+import Calendar from './components/calendar';
 
 const App: React.FC = () => {
   return (
@@ -6,6 +7,7 @@ const App: React.FC = () => {
       <h1>Welcome to My React App</h1>
       <p>This is a simple React application using TypeScript.</p>
       <button onClick={() => alert('Hello, world!')}>Click Me!</button>
+      <Calendar/>
     </div>
   );
 };
