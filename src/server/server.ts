@@ -1,14 +1,34 @@
 import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware setup
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 // PostgreSQL connection configuration using ElephantSQL details
 const pool = new Pool({
-  connectionString: 'postgres://yphjsrmt:ThN80J8FETf_GMKYLDnQ03UGUSQL126A@raja.db.elephantsql.com/yphjsrmt', // Replace with your actual ElephantSQL URL
+  connectionString: 'postgres://yphjsrmt:ThN80J8FETf_GMKYLDnQ03UGUSQL126A@raja.db.elephantsql.com/yphjsrmt',
   ssl: { rejectUnauthorized: false }, // Ensure SSL connection
 });
+
+// Initialize the database with the schema
+const initializeDatabase = async () => {
+  try {
+    const schema = fs.readFileSync(path.join(__dirname, '../schema.ts'), 'utf-8');
+    await pool.query(schema);
+    console.log('Database initialized with schema');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+};
 
 // Test the database connection
 pool.connect((err, client, release) => {
@@ -38,7 +58,8 @@ app.get('/status', async (req: Request, res: Response) => {
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
+// Start the Express server
+app.listen(PORT, async () => {
+  await initializeDatabase();
   console.log(`Server is running on http://localhost:${PORT}`);
 });

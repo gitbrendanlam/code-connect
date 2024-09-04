@@ -8,6 +8,7 @@ export interface USER {
 export interface GROUP {
 	group_id: number;
 	group_name: string;
+    description: string;
 }
 
 export interface AVAILABILITY {
