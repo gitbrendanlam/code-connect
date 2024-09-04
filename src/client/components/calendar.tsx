@@ -11,13 +11,50 @@ interface IDay {
   dayFullDate: string,
 }
 
+type TAvailabilityBlocks = ITimeBlock[];
+// type TAvailabilityBlocks = IWeekBlock[];
+
+interface IWeekBlock {
+  weekOf: string,
+  availability: ITimeBlock[],
+}
+
+interface ITimeBlock {
+  week_of: string,
+  date: string,
+  week_day: number,
+  start_time: string,
+}
+
+const testEvents = [{
+  week_of: '9-1-2024',
+  date: '9-3-2024',
+  week_day: 2,
+  start_time: '6:00 AM',
+},
+{
+  week_of: '9-1-2024',
+  date: '9-3-2024',
+  week_day: 2,
+  start_time: '7:00 AM',
+},
+{
+  week_of: '9-1-2024',
+  date: '9-4-2024',
+  week_day: 3,
+  start_time: '10:00 AM',
+}];
+
 export default function Calendar() {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  // let currentMonth: number | null = null;
-  // let currentYear: number | null = null;
-  const [currDate, setCurrDate] = useState<string>();
+  const times = ['12AM', '1AM', '2AM', '3AM', '4AM', '5AM', '6AM', '7AM', '8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM', '8PM', '9PM', '10PM', '11PM'];
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [headerDate, setheaderDate] = useState<string>();
   const [weekHeader, setWeekHeader] = useState<TWeek>([]);
+  const [availabilityBlocks, setAvailabilityBlocks] = useState<TAvailabilityBlocks>();
+
+  //Refactor to update state with selected participants from group
+  const [participants, setParticipants] = useState<number[]>([1]);
   
   const container: React.LegacyRef<HTMLDivElement> = useRef<HTMLDivElement>(null);
   const containerNav: React.LegacyRef<HTMLDivElement> = useRef<HTMLDivElement>(null);
@@ -32,32 +69,81 @@ export default function Calendar() {
       1440
     
     // Set the days of the week in the header row
-    setCurrDate(moment().format('MM-DD-YYYY'));
+    currWeekClick();
+    // const week: TWeek = [];
+    // for (let i = 0; i < 7 ; i++) {
+    //   week.push({
+    //     dayShortText: days[i],
+    //     dayDateNum: i - moment().day() + moment().date(),
+    //     dayFullDate: moment().add(i - moment().day(), 'days').format('MM-DD-YYYY'),
+    //   })
+    // }
+    // setWeekHeader(week);
+    // setheaderDate(week[0].dayFullDate);
+    
 
-    const week: TWeek = [];
-    for (let i = 0; i < 7 ; i++) {
-      week.push({
-        dayShortText: days[i],
-        dayDateNum: i - moment().day() + moment().date(),
-        dayFullDate: moment().add(i - moment().day(), 'days').format('MM-DD-YYYY'),
-      })
-    }
-    console.log(week);
-    setWeekHeader(week);
+    // ==== Create test availability blocks (TO DELETE) ===
+    const availability: TAvailabilityBlocks = [];
+    testEvents.forEach((event, index) => {
+      availability.push(event);
+    })
+    setAvailabilityBlocks(availability);
+    // ====================================================
+
     setIsLoaded(true);
   }, [])
+
+  const currWeekClick = () => {
+    const week: TWeek = [];
+    days.forEach((day, index) => {
+      week.push({
+        dayShortText: days[index],
+        dayDateNum: index - moment().day() + moment().date(),
+        dayFullDate: moment().add(index - moment().day(), 'days').format('MM-DD-YYYY'),
+      })
+    })
+    setWeekHeader(week);
+    setheaderDate(week[0].dayFullDate);
+  }
+
+  const prevWeekClick = () => {
+    const week: TWeek = [];
+    weekHeader.forEach((day, index) => {
+      week.push({
+        dayShortText: days[index],
+        dayDateNum: moment(day.dayFullDate).subtract(7, 'days').date(),
+        dayFullDate: moment(day.dayFullDate).subtract(7, 'days').format('MM-DD-YYYY'),
+      })
+    })
+    setWeekHeader(week);
+    setheaderDate(week[0].dayFullDate);
+  }
+
+  const nextWeekClick = () => {
+    const week: TWeek = [];
+    weekHeader.forEach((day, index) => {
+      week.push({
+        dayShortText: days[index],
+        dayDateNum: moment(day.dayFullDate).add(7, 'days').date(),
+        dayFullDate: moment(day.dayFullDate).add(7, 'days').format('MM-DD-YYYY'),
+      })
+    })
+    setWeekHeader(week);
+    setheaderDate(week[0].dayFullDate);
+  }
 
   return (
     <div className="flex h-screen flex-col">
       <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
         <h1 className="text-base font-semibold leading-6 text-gray-900">
-          {isLoaded && <time dateTime={`${moment(currDate).format('YYYY')}-${moment(currDate).format('MM')}`}>{moment(currDate).format('MMMM')} {moment(currDate).format('YYYY')}</time>}
+          {isLoaded && <time dateTime={`${moment(headerDate).format('YYYY')}-${moment(headerDate).format('MM')}`}>{moment(headerDate).format('MMMM')} {moment(headerDate).format('YYYY')}</time>}
         </h1>
         <div className="flex items-center">
           <div className="relative flex items-center rounded-md bg-white shadow-sm md:items-stretch">
             <button
               type="button"
               className="flex h-9 w-12 items-center justify-center rounded-l-md border-y border-l border-gray-300 pr-1 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:pr-0 md:hover:bg-gray-50"
+              onClick={prevWeekClick}
             >
               <span className="sr-only">Previous week</span>
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -65,6 +151,7 @@ export default function Calendar() {
             <button
               type="button"
               className="hidden border-y border-gray-300 px-3.5 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:relative md:block"
+              onClick={currWeekClick}
             >
               Today
             </button>
@@ -72,6 +159,7 @@ export default function Calendar() {
             <button
               type="button"
               className="flex h-9 w-12 items-center justify-center rounded-r-md border-y border-r border-gray-300 pl-1 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:pl-0 md:hover:bg-gray-50"
+              onClick={nextWeekClick}
             >
               <span className="sr-only">Next week</span>
               <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -132,7 +220,7 @@ export default function Calendar() {
               type="button"
               className="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              Add event
+              Add availability
             </button>
           </div>
           <Menu as="div" className="relative ml-6 md:hidden">
@@ -241,7 +329,7 @@ export default function Calendar() {
               <div className="col-end-1 w-14" />
               {
                 weekHeader.map((day, index) => {
-                  if (day.dayFullDate === moment().format('MM-DD-YYYY')) return <div className="flex items-center justify-center py-3">
+                  if (day.dayFullDate === moment().format('MM-DD-YYYY')) return <div className="flex items-center justify-center py-3" key={day.dayShortText.concat(day.dayDateNum.toString())}>
                     <span className="flex items-baseline">
                       {day.dayShortText}{' '}
                       <span className="ml-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
@@ -308,7 +396,7 @@ export default function Calendar() {
               <div
                 className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
                 style={{ gridTemplateRows: 'repeat(48, minmax(3.5rem, 1fr))' }}
-              >
+              > 
                 <div ref={containerOffset} className="row-end-1 h-7"></div>
                 <div>
                   <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
@@ -473,39 +561,29 @@ export default function Calendar() {
                 className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8"
                 style={{ gridTemplateRows: '1.75rem repeat(288, minmax(0, 1fr)) auto' }}
               >
-                <li className="relative mt-px flex sm:col-start-3" style={{ gridRow: '74 / span 12' }}>
-                  <a
-                    href="#"
-                    className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
-                  >
-                    <p className="order-1 font-semibold text-blue-700">Breakfast</p>
-                    <p className="text-blue-500 group-hover:text-blue-700">
-                      <time dateTime="2022-01-12T06:00">6:00 AM</time>
-                    </p>
-                  </a>
-                </li>
-                <li className="relative mt-px flex sm:col-start-3" style={{ gridRow: '92 / span 30' }}>
-                  <a
-                    href="#"
-                    className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-pink-50 p-2 text-xs leading-5 hover:bg-pink-100"
-                  >
-                    <p className="order-1 font-semibold text-pink-700">Flight to Paris</p>
-                    <p className="text-pink-500 group-hover:text-pink-700">
-                      <time dateTime="2022-01-12T07:30">7:30 AM</time>
-                    </p>
-                  </a>
-                </li>
-                <li className="relative mt-px hidden sm:col-start-6 sm:flex" style={{ gridRow: '122 / span 24' }}>
-                  <a
-                    href="#"
-                    className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-gray-100 p-2 text-xs leading-5 hover:bg-gray-200"
-                  >
-                    <p className="order-1 font-semibold text-gray-700">Meeting with design team at Disney</p>
-                    <p className="text-gray-500 group-hover:text-gray-700">
-                      <time dateTime="2022-01-15T10:00">10:00 AM</time>
-                    </p>
-                  </a>
-                </li>
+                { availabilityBlocks &&
+                  availabilityBlocks.map((event, index) => {
+                    if (moment(event.week_of).format('MM-DD-YYYY') === headerDate) {
+                      const AMPM = event.start_time.slice(-2);
+                      let start: number = Number(event.start_time.split(':')[0]);
+                      if (event.start_time === '12:00 AM') start = 0;
+                      if (AMPM === 'PM') start = Number(event.start_time.split(':')[0]) + 12;
+
+                      return <li key={event.date.concat(event.start_time)} className={`relative mt-px flex sm:col-start-${event.week_day.toString()}`} style={{ gridRow: `${start*12+2} / span 12` }}>
+                          <a
+                            href="#"
+                            className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
+                          >
+                            <p className="order-1 font-semibold text-blue-700">{participants.length} Availabile</p>
+                            <p className="text-blue-500 group-hover:text-blue-700">
+                              <time dateTime={`${moment(event.date).format('YYYY-MM-DD')}T${event.start_time}`}>{event.start_time}</time>
+                            </p>
+                          </a>
+                        </li>
+                    }
+                    
+                  })
+                }
               </ol>
             </div>
           </div>
