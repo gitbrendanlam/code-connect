@@ -2,9 +2,9 @@ import React from 'react';
 
 const CTA: React.FC = () => {
   return (
-    <div className='bg-white'>
+    <div className='bg-white dark:bg-slate-800'>
       <div className='mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8'>
-        <h2 className='text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl'>
+        <h2 className='dark:text-white text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl'>
           Connect with other Developers, be well prepared for your next move.
           <br />
           Start using our app today.

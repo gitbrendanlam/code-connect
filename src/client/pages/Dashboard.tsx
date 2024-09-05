@@ -1,13 +1,15 @@
 import React from 'react';
 import Layout from '../components/Layout';
-import CTA from '../components/CTA';
+import List from '../components/List';
 
 const Dashboard = () => {
   return (
     <Layout>
-      <div className='grid grid-cols-2 divide-x'>
-        <div>01</div>
-        <div>02</div>
+      <div className='grid grid-cols-2 divide-x p-5'>
+        <div className='pt-1'>PLACE HOLDER FOR MINI CALENDAR</div>
+        <div className='pt-1'>
+          <List />
+        </div>
       </div>
     </Layout>
   );
