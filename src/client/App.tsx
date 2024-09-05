@@ -1,14 +1,19 @@
 import React from 'react';
-import Calendar from './components/calendar';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import GroupDetails from './pages/GroupDetails';
 
 const App: React.FC = () => {
   return (
-    <div style={{ textAlign: 'center', padding: '50px' }}>
-      <h1>Welcome to My React App</h1>
-      <p>This is a simple React application using TypeScript.</p>
-      <button onClick={() => alert('Hello, world!')}>Click Me!</button>
-      <Calendar/>
-    </div>
+    <Router>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/groupdetail' element={<GroupDetails />} />
+      </Routes>
+    </Router>
   );
 };
 
