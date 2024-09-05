@@ -1,15 +1,18 @@
 import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 import Calendar from './components/Calendar';
 
 const App: React.FC = () => {
   return (
-    // <div style={{ textAlign: 'center', padding: '50px' }}>
-    <div className="flex justify-between h-screen">
-      <h1>Welcome to My React App</h1>
-      <div className="w-2/3">
-        <Calendar/>
-      </div>      
-    </div>
+    <Router>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/dashboard' element={<Dashboard />} />
+      </Routes>
+    </Router>
   );
 };
 
