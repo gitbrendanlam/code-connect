@@ -12,12 +12,11 @@ interface IDay {
 }
 
 type TAvailabilityBlocks = ITimeBlock[];
-// type TAvailabilityBlocks = IWeekBlock[];
 
-interface IWeekBlock {
-  weekOf: string,
-  availability: ITimeBlock[],
-}
+// interface IWeekBlock {
+//   weekOf: string,
+//   availability: ITimeBlock[],
+// }
 
 interface ITimeBlock {
   week_of: string,
@@ -34,8 +33,8 @@ const testEvents = [{
 },
 {
   week_of: '9-1-2024',
-  date: '9-3-2024',
-  week_day: 2,
+  date: '9-6-2024',
+  week_day: 5,
   start_time: '7:00 AM',
 },
 {
@@ -47,7 +46,6 @@ const testEvents = [{
 
 export default function Calendar() {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const times = ['12AM', '1AM', '2AM', '3AM', '4AM', '5AM', '6AM', '7AM', '8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM', '8PM', '9PM', '10PM', '11PM'];
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [headerDate, setheaderDate] = useState<string>();
   const [weekHeader, setWeekHeader] = useState<TWeek>([]);
@@ -102,6 +100,7 @@ export default function Calendar() {
         dayFullDate: moment().add(index - moment().day(), 'days').format('MM-DD-YYYY'),
       })
     })
+    console.log(week)
     setWeekHeader(week);
     setheaderDate(week[0].dayFullDate);
   }
@@ -564,24 +563,27 @@ export default function Calendar() {
                 { availabilityBlocks &&
                   availabilityBlocks.map((event, index) => {
                     if (moment(event.week_of).format('MM-DD-YYYY') === headerDate) {
+                      // Get day of the week to print on corresponding column in grid
+                      const weekday = (event.week_day + 1).toString()
+                      console.log(weekday);
                       const AMPM = event.start_time.slice(-2);
                       let start: number = Number(event.start_time.split(':')[0]);
                       if (event.start_time === '12:00 AM') start = 0;
                       if (AMPM === 'PM') start = Number(event.start_time.split(':')[0]) + 12;
 
-                      return <li key={event.date.concat(event.start_time)} className={`relative mt-px flex sm:col-start-${event.week_day.toString()}`} style={{ gridRow: `${start*12+2} / span 12` }}>
-                          <a
-                            href="#"
-                            className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
-                          >
-                            <p className="order-1 font-semibold text-blue-700">{participants.length} Availabile</p>
-                            <p className="text-blue-500 group-hover:text-blue-700">
-                              <time dateTime={`${moment(event.date).format('YYYY-MM-DD')}T${event.start_time}`}>{event.start_time}</time>
-                            </p>
-                          </a>
-                        </li>
-                    }
-                    
+                      // return <li key={event.date.concat(event.start_time)} className={`relative mt-px flex sm:col-start-${event.week_day.toString()}`} style={{ gridRow: `${start*12+2} / span 12` }}>
+                      return <li key={event.date.concat(event.start_time)} className={`relative mt-px flex sm:col-start-${weekday}`} style={{ gridRow: `${start*12+2} / span 12` }}>
+                        <a
+                          href="#"
+                          className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
+                        >
+                          <p className="order-1 font-semibold text-blue-700">{participants.length} Availabile </p>
+                          <p className="text-blue-500 group-hover:text-blue-700">
+                            <time dateTime={`${moment(event.date).format('YYYY-MM-DD')}T${event.start_time}`}>{event.start_time}</time>
+                          </p>
+                        </a>
+                      </li>
+                    } 
                   })
                 }
               </ol>
