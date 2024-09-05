@@ -1,6 +1,6 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, RefCallback } from 'react';
 import moment = require('moment');
 
 type TWeek = IDay[];
@@ -44,7 +44,7 @@ const testEvents = [{
   start_time: '10:00 AM',
 }];
 
-export default function Calendar() {
+export default function Calendar ({ type, open, setOpen } : { type: any, open: boolean, setOpen: any }) {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [headerDate, setheaderDate] = useState<string>();
@@ -68,16 +68,6 @@ export default function Calendar() {
     
     // Set the days of the week in the header row
     currWeekClick();
-    // const week: TWeek = [];
-    // for (let i = 0; i < 7 ; i++) {
-    //   week.push({
-    //     dayShortText: days[i],
-    //     dayDateNum: i - moment().day() + moment().date(),
-    //     dayFullDate: moment().add(i - moment().day(), 'days').format('MM-DD-YYYY'),
-    //   })
-    // }
-    // setWeekHeader(week);
-    // setheaderDate(week[0].dayFullDate);
     
 
     // ==== Create test availability blocks (TO DELETE) ===
@@ -131,10 +121,14 @@ export default function Calendar() {
     setheaderDate(week[0].dayFullDate);
   }
 
+  const openAvailabilityModal = () => {
+    open ? setOpen(false) : setOpen(true);
+  }
+
   return (
     <div className="flex h-screen flex-col">
       <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
-        <h1 className="text-base font-semibold leading-6 text-gray-900">
+        <h1 className="text-lg font-medium text-gray-900">
           {isLoaded && <time dateTime={`${moment(headerDate).format('YYYY')}-${moment(headerDate).format('MM')}`}>{moment(headerDate).format('MMMM')} {moment(headerDate).format('YYYY')}</time>}
         </h1>
         <div className="flex items-center">
@@ -215,12 +209,13 @@ export default function Calendar() {
               </MenuItems>
             </Menu>
             <div className="ml-6 h-6 w-px bg-gray-300" />
-            <button
+            {type === 'personal' && <button
               type="button"
               className="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              onClick={openAvailabilityModal}
             >
               Add availability
-            </button>
+            </button>}
           </div>
           <Menu as="div" className="relative ml-6 md:hidden">
             <MenuButton className="-mx-2 flex items-center rounded-full border border-transparent p-2 text-gray-400 hover:text-gray-500">
@@ -566,6 +561,7 @@ export default function Calendar() {
                       // Get day of the week to print on corresponding column in grid
                       const weekday = (event.week_day + 1).toString()
                       console.log(weekday);
+                      
                       const AMPM = event.start_time.slice(-2);
                       let start: number = Number(event.start_time.split(':')[0]);
                       if (event.start_time === '12:00 AM') start = 0;

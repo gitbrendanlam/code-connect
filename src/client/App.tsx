@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
-import Calendar from './components/Calendar';
+import EditAvailabilityPage from './pages/EditAvailabilityPage';
 
 const App: React.FC = () => {
   return (
@@ -11,6 +11,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/my-availability' element={<EditAvailabilityPage />} />
       </Routes>
     </Router>
   );

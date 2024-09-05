@@ -1,64 +1,26 @@
-/*
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
-*/
-'use client'
-
 import React, { useState } from 'react'
+import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { LinkIcon, PlusIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import moment = require('moment');
 
-const team = [
-  {
-    name: 'Tom Cook',
-    email: 'tom.cook@example.com',
-    href: '#',
-    imageUrl:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  },
-  {
-    name: 'Whitney Francis',
-    email: 'whitney.francis@example.com',
-    href: '#',
-    imageUrl:
-      'https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  },
-  {
-    name: 'Leonard Krasner',
-    email: 'leonard.krasner@example.com',
-    href: '#',
-    imageUrl:
-      'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  },
-  {
-    name: 'Floyd Miles',
-    email: 'floyd.miles@example.com',
-    href: '#',
-    imageUrl:
-      'https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  },
-  {
-    name: 'Emily Selman',
-    email: 'emily.selman@example.com',
-    href: '#',
-    imageUrl:
-      'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  },
-]
+export default function AddAvailabilityForm({ open, setOpen } : { open: boolean, setOpen: any }) {
+  const [date, setDate] = useState<string>();
+  const [time, setTime] = useState<string>(moment().format('h:mm a').split(':')[0].concat(':00 PM'));
+  const [recurring, setRecurring] = useState<string>('none');
 
-export default function Example() {
-  const [open, setOpen] = useState(true)
+  const times = ['12:00 AM', '01:00 AM', '02:00 AM', '03:00 AM', '04:00 AM', '05:00 AM', '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM']
+
+  const save = () => {
+    // Validate input formats
+    console.log(date, time, recurring);
+    if (moment(date).format('MM-DD-YYYY') !== date) {
+      alert('Date should be in MM-DD-YYYY format!');
+    } else {
+      setOpen(false);
+    }
+  }
 
   return (
     <Dialog open={open} onClose={setOpen} className="relative z-10">
@@ -75,7 +37,7 @@ export default function Example() {
                 <div className="h-0 flex-1 overflow-y-auto">
                   <div className="bg-indigo-700 px-4 py-6 sm:px-6">
                     <div className="flex items-center justify-between">
-                      <DialogTitle className="text-base font-semibold leading-6 text-white">New Project</DialogTitle>
+                      <DialogTitle className="text-base font-semibold leading-6 text-white">Add Availility</DialogTitle>
                       <div className="ml-3 flex h-7 items-center">
                         <button
                           type="button"
@@ -90,7 +52,7 @@ export default function Example() {
                     </div>
                     <div className="mt-1">
                       <p className="text-sm text-indigo-300">
-                        Get started by filling in the information below to create your new project.
+                        Fill in the below information to add availability to your personal calendar.
                       </p>
                     </div>
                   </div>
@@ -98,150 +60,169 @@ export default function Example() {
                     <div className="divide-y divide-gray-200 px-4 sm:px-6">
                       <div className="space-y-6 pb-5 pt-6">
                         <div>
-                          <label htmlFor="project-name" className="block text-sm font-medium leading-6 text-gray-900">
-                            Project name
+                          <label htmlFor="availability-date" className="block text-sm font-medium leading-6 text-gray-900">
+                            Date
                           </label>
                           <div className="mt-2">
                             <input
                               id="project-name"
                               name="project-name"
                               type="text"
+                              placeholder='MM-DD-YYYY'
                               className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                              onChange={e => setDate(e.target.value)}
                             />
                           </div>
                         </div>
-                        <div>
-                          <label htmlFor="description" className="block text-sm font-medium leading-6 text-gray-900">
-                            Description
+                        {/* <div>
+                          <label htmlFor="project-name" className="block text-sm font-medium leading-6 text-gray-900">
+                            Start Time
                           </label>
                           <div className="mt-2">
-                            <textarea
-                              id="description"
-                              name="description"
-                              rows={4}
+                            <input
+                              id="project-name"
+                              name="project-name"
+                              type="text"
+                              placeholder='HH:MM AM/PM'
                               className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                              defaultValue={''}
+                              onChange={e => setTime(e.target.value)}
                             />
+                            <div className='mt-1'>
+                              <p className="text-xs text-gray-500">
+                                All availability blocks are in 1 hour increments
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-medium leading-6 text-gray-900">Team Members</h3>
+                        </div> */}
+                        <Listbox value={time} onChange={setTime}>
+                          <Label className="block text-sm font-medium leading-6 text-gray-900">Start Time</Label>
                           <div className="mt-2">
-                            <div className="flex space-x-2">
-                              {team.map((person) => (
-                                <a
-                                  key={person.email}
-                                  href={person.href}
-                                  className="relative rounded-full hover:opacity-75"
+                            <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                              <span className="block truncate">{time}</span>
+                              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon aria-hidden="true" className="h-5 w-5 text-gray-400" />
+                              </span>
+                            </ListboxButton>
+                            <ListboxOptions
+                              transition
+                              className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
+                            >
+                              {times.map((time) => (
+                                <ListboxOption
+                                  key={time}
+                                  value={time}
+                                  className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white"
                                 >
-                                  <img
-                                    alt={person.name}
-                                    src={person.imageUrl}
-                                    className="inline-block h-8 w-8 rounded-full"
-                                  />
-                                </a>
+                                  <span className="block truncate font-normal group-data-[selected]:font-semibold">{time}</span>
+
+                                  <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
+                                    <CheckIcon aria-hidden="true" className="h-5 w-5" />
+                                  </span>
+                                </ListboxOption>
                               ))}
-                              <button
-                                type="button"
-                                className="relative inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                              >
-                                <span className="absolute -inset-2" />
-                                <span className="sr-only">Add team member</span>
-                                <PlusIcon aria-hidden="true" className="h-5 w-5" />
-                              </button>
-                            </div>
+                            </ListboxOptions>
                           </div>
-                        </div>
+                        </Listbox>
                         <fieldset>
-                          <legend className="text-sm font-medium leading-6 text-gray-900">Privacy</legend>
-                          <div className="mt-2 space-y-4">
-                            <div className="relative flex items-start">
-                              <div className="absolute flex h-6 items-center">
-                                <input
-                                  defaultChecked
-                                  id="privacy-public"
-                                  name="privacy"
-                                  type="radio"
-                                  aria-describedby="privacy-public-description"
-                                  className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                                />
-                              </div>
-                              <div className="pl-7 text-sm leading-6">
-                                <label htmlFor="privacy-public" className="font-medium text-gray-900">
-                                  Public access
-                                </label>
-                                <p id="privacy-public-description" className="text-gray-500">
-                                  Everyone with the link will see this project.
-                                </p>
-                              </div>
+                          <legend className="text-sm font-semibold leading-6 text-gray-900">Recurring</legend>
+                          <p className="mt-1 text-sm leading-6 text-gray-600">How often will this availability repeat?</p>
+                          <div className="mt-6 space-y-6">
+                            <div className="flex items-center">
+                              <input
+                                defaultChecked={true}
+                                id='recurring-none'
+                                name="recurring"
+                                type="radio"
+                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                onChange={e => {
+                                  if(e.target.checked === true) setRecurring('none')}}
+                              />
+                              <label htmlFor='recurring-none' className="ml-3 block text-sm font-medium leading-6 text-gray-900">
+                                None
+                              </label>
                             </div>
-                            <div>
-                              <div className="relative flex items-start">
-                                <div className="absolute flex h-6 items-center">
-                                  <input
-                                    id="privacy-private-to-project"
-                                    name="privacy"
-                                    type="radio"
-                                    aria-describedby="privacy-private-to-project-description"
-                                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                                  />
-                                </div>
-                                <div className="pl-7 text-sm leading-6">
-                                  <label htmlFor="privacy-private-to-project" className="font-medium text-gray-900">
-                                    Private to project members
-                                  </label>
-                                  <p id="privacy-private-to-project-description" className="text-gray-500">
-                                    Only members of this project would be able to access.
-                                  </p>
-                                </div>
-                              </div>
+                            <div className="flex items-center">
+                              <input
+                                id='recurring-weekly'
+                                name="recurring"
+                                type="radio"
+                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                onChange={e => {if(e.target.checked === true) setRecurring('weekly')}}
+                              />
+                              <label htmlFor='recurring-weekly' className="ml-3 block text-sm font-medium leading-6 text-gray-900">
+                                Weekly
+                              </label>
                             </div>
-                            <div>
-                              <div className="relative flex items-start">
-                                <div className="absolute flex h-6 items-center">
-                                  <input
-                                    id="privacy-private"
-                                    name="privacy"
-                                    type="radio"
-                                    aria-describedby="privacy-private-to-project-description"
-                                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                                  />
-                                </div>
-                                <div className="pl-7 text-sm leading-6">
-                                  <label htmlFor="privacy-private" className="font-medium text-gray-900">
-                                    Private to you
-                                  </label>
-                                  <p id="privacy-private-description" className="text-gray-500">
-                                    You are the only one able to access this project.
-                                  </p>
-                                </div>
-                              </div>
+                            <div className="flex items-center">
+                              <input
+                                id='recurring-monthly'
+                                name="recurring"
+                                type="radio"
+                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                onChange={e => {if(e.target.checked === true) setRecurring('monthly')}}
+                              />
+                              <label htmlFor='recurring-monthly' className="ml-3 block text-sm font-medium leading-6 text-gray-900">
+                                Monthly
+                              </label>
                             </div>
                           </div>
                         </fieldset>
-                      </div>
-                      <div className="pb-6 pt-4">
-                        <div className="flex text-sm">
-                          <a
-                            href="#"
-                            className="group inline-flex items-center font-medium text-indigo-600 hover:text-indigo-900"
-                          >
-                            <LinkIcon
-                              aria-hidden="true"
-                              className="h-5 w-5 text-indigo-500 group-hover:text-indigo-900"
-                            />
-                            <span className="ml-2">Copy link</span>
-                          </a>
-                        </div>
-                        <div className="mt-4 flex text-sm">
-                          <a href="#" className="group inline-flex items-center text-gray-500 hover:text-gray-900">
-                            <QuestionMarkCircleIcon
-                              aria-hidden="true"
-                              className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                            />
-                            <span className="ml-2">Learn more about sharing</span>
-                          </a>
-                        </div>
+                        {/* <div>
+                          <label htmlFor="project-name" className="block text-sm font-medium leading-6 text-gray-900">
+                            Recurring
+                          </label>
+                          <div className="relative flex items-start">
+                            <div className="absolute flex h-6 items-center">
+                              <input
+                                id="recurring-none"
+                                name="none"
+                                type="radio"
+                                aria-describedby="recurring-none-for-single-time-block"
+                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                onClick={e => setRecurring('none')}
+                              />
+                            </div>
+                            <div className="pl-7 text-sm leading-6">
+                              <label htmlFor="recurring-none" className="font-medium text-gray-900">
+                                None
+                              </label>
+                            </div>
+                          </div>
+                          <div className="relative flex items-start">
+                            <div className="absolute flex h-6 items-center">
+                              <input
+                                id="recurring-weekly"
+                                name="weekly"
+                                type="radio"
+                                aria-describedby="recurring-weekly-to-repeat-avalabilty-weekly"
+                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                onClick={e => setRecurring('weekly')}
+                              />
+                            </div>
+                            <div className="pl-7 text-sm leading-6">
+                              <label htmlFor="recurring-weekly" className="font-medium text-gray-900">
+                                Weekly
+                              </label>
+                            </div>
+                          </div>
+                          <div className="relative flex items-start">
+                            <div className="absolute flex h-6 items-center">
+                              <input
+                                id="recurring-monthly"
+                                name="monthly"
+                                type="radio"
+                                aria-describedby="recurring-monthly-to-repeat-avalabilty-monthly"
+                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                onClick={e => setRecurring('monthly')}
+                              />
+                            </div>
+                            <div className="pl-7 text-sm leading-6">
+                              <label htmlFor="privacy-private" className="font-medium text-gray-900">
+                                Monthly
+                              </label>
+                            </div>
+                          </div>
+                        </div> */}
                       </div>
                     </div>
                   </div>
@@ -255,8 +236,9 @@ export default function Example() {
                     Cancel
                   </button>
                   <button
-                    type="submit"
+                    type="button"
                     className="ml-4 inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    onClick={save}
                   >
                     Save
                   </button>
