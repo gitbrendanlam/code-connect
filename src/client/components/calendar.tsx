@@ -19,7 +19,7 @@ interface IColClassNames {
   'Wednesday': string,
   'Thursday': string,
   'Friday': string,
-  'Saturyda': string,
+  'Saturday': string,
 }
 
 const columnsClassName = {
@@ -29,7 +29,7 @@ const columnsClassName = {
   'Wednesday': 'relative mt-px flex sm:col-start-4',
   'Thursday': 'relative mt-px flex sm:col-start-5',
   'Friday': 'relative mt-px flex sm:col-start-6',
-  'Saturyda': 'relative mt-px flex sm:col-start-7',
+  'Saturday': 'relative mt-px flex sm:col-start-7',
 }
 
 export default function Calendar ({ type, open, setOpen } : { type: any, open: boolean, setOpen: any }) {
