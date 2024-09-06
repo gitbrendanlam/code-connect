@@ -1,4 +1,31 @@
+import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleAuthResponse, TokenResponse } from '../../common/Interface/auth';
+
 import React from 'react';
+
+const googleLogin = useGoogleLogin({
+  onSuccess: async ({ code }: GoogleAuthResponse) => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to exchange code for tokens');
+      }
+
+      const tokens: TokenResponse = await response.json();
+      console.log(tokens);
+    } catch (error) {
+      console.error('Error exchanging code for tokens:', error);
+    }
+  },
+  flow: 'auth-code',
+});
 
 const CTA: React.FC = () => {
   return (
