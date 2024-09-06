@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS
 CREATE TABLE IF NOT EXISTS
   App_Groups (
     group_id SERIAL PRIMARY KEY,
-    group_name varchar(255)
+    group_name varchar(255),
+    group_description varchar(255)
   );
 
 CREATE TABLE IF NOT EXISTS

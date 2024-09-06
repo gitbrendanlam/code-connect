@@ -1,54 +1,47 @@
-export interface USER {
+export interface App_Users {
 	user_id: number;
 	username: string;
 	email: string;
 	password: string;
 }
 
-export interface GROUP {
+export interface App_Groups {
 	group_id: number;
 	group_name: string;
     description: string;
 }
 
-export interface AVAILABILITY {
+export interface Availabilities {
 	availability_id: number;
 	time: string;
 }
 
-export interface GROUP_MEMBER {
+export interface Group_Member {
 	member_id: number;
 	status: string;
 }
 
-export interface MEETING {
-	meeting_id: number;
-	meeting_name: string;
-	description: string;
-}
-
-export interface DAYS_OF_THE_WEEK {
+export interface Week_Days {
 	day_code: string;
 	day_description: string;
 }
 
-export interface TIME {
-	time_code: string;
-	time_description: string;
+export interface Hours {
+	hour_code: string;
+	hour_description: string;
 }
 
-export interface AMPM {
+export interface Meridiem {
 	code: string;
 	decode: string;
 }
 
 export interface RootObject {
-	uSER: USER;
-	gROUP: GROUP;
-	aVAILABILITY: AVAILABILITY;
-	gROUP_MEMBER: GROUP_MEMBER;
-	mEETING: MEETING;
-	dAYS_OF_THE_WEEK: DAYS_OF_THE_WEEK;
-	tIME: TIME;
-	aMPM: AMPM;
+	app_Users: App_Users;
+	app_Groups: App_Groups;
+	availabilities: Availabilities;
+	group_Members: Group_Member;
+	week_Days: Week_Days;
+	hours: Hours;
+	meridiem: Meridiem;
 }
