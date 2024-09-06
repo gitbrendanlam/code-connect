@@ -4,8 +4,12 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import moment = require('moment');
+import { useAppDispatch } from '../hooks'
+import { addAvailability } from '../slicers/availabilitySlice'
 
 export default function AddAvailabilityForm({ open, setOpen } : { open: boolean, setOpen: any }) {
+  const dispatch = useAppDispatch();
+
   const [date, setDate] = useState<string>();
   const [time, setTime] = useState<string>(moment().format('h:mm a').split(':')[0].concat(':00 PM'));
   const [recurring, setRecurring] = useState<string>('none');
@@ -18,6 +22,13 @@ export default function AddAvailabilityForm({ open, setOpen } : { open: boolean,
     if (moment(date).format('MM-DD-YYYY') !== date) {
       alert('Date should be in MM-DD-YYYY format!');
     } else {
+      (() => dispatch(addAvailability({
+        week_of: moment(date).add(0 - moment(date).day(), 'days').format('MM-DD-YYYY'),
+        date: date,
+        week_day: moment(date).day() + 1,
+        start_time: time,
+        recurring,
+      })))();
       setOpen(false);
     }
   }
@@ -74,26 +85,6 @@ export default function AddAvailabilityForm({ open, setOpen } : { open: boolean,
                             />
                           </div>
                         </div>
-                        {/* <div>
-                          <label htmlFor="project-name" className="block text-sm font-medium leading-6 text-gray-900">
-                            Start Time
-                          </label>
-                          <div className="mt-2">
-                            <input
-                              id="project-name"
-                              name="project-name"
-                              type="text"
-                              placeholder='HH:MM AM/PM'
-                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                              onChange={e => setTime(e.target.value)}
-                            />
-                            <div className='mt-1'>
-                              <p className="text-xs text-gray-500">
-                                All availability blocks are in 1 hour increments
-                              </p>
-                            </div>
-                          </div>
-                        </div> */}
                         <Listbox value={time} onChange={setTime}>
                           <Label className="block text-sm font-medium leading-6 text-gray-900">Start Time</Label>
                           <div className="mt-2">
@@ -135,7 +126,7 @@ export default function AddAvailabilityForm({ open, setOpen } : { open: boolean,
                                 type="radio"
                                 className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                                 onChange={e => {
-                                  if(e.target.checked === true) setRecurring('none')}}
+                                  if(e.target.checked === true || e.target.defaultChecked === true) setRecurring('none')}}
                               />
                               <label htmlFor='recurring-none' className="ml-3 block text-sm font-medium leading-6 text-gray-900">
                                 None

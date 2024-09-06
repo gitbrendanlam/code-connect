@@ -1,10 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit'
-import availabilityReducer from './slicers/availabilitySlice';
-// ...
+import availabilitySlice from './slicers/availabilitySlice';
 
 export const store = configureStore({
   reducer: {
-    availability: availabilityReducer,
+    availability: availabilitySlice,
   },
 })
 

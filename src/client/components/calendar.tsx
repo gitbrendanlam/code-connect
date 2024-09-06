@@ -2,6 +2,8 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
 import React, { useState, useEffect, useRef, RefCallback } from 'react';
 import moment = require('moment');
+import { useAppSelector, useAppDispatch } from '../hooks';
+import { addAvailability } from '../slicers/availabilitySlice';
 
 type TWeek = IDay[];
 
@@ -13,11 +15,6 @@ interface IDay {
 
 type TAvailabilityBlocks = ITimeBlock[];
 
-// interface IWeekBlock {
-//   weekOf: string,
-//   availability: ITimeBlock[],
-// }
-
 interface ITimeBlock {
   week_of: string,
   date: string,
@@ -25,31 +22,17 @@ interface ITimeBlock {
   start_time: string,
 }
 
-const testEvents = [{
-  week_of: '9-1-2024',
-  date: '9-3-2024',
-  week_day: 2,
-  start_time: '6:00 AM',
-},
-{
-  week_of: '9-1-2024',
-  date: '9-6-2024',
-  week_day: 5,
-  start_time: '7:00 AM',
-},
-{
-  week_of: '9-1-2024',
-  date: '9-4-2024',
-  week_day: 3,
-  start_time: '10:00 AM',
-}];
+
 
 export default function Calendar ({ type, open, setOpen } : { type: any, open: boolean, setOpen: any }) {
+  const dispatch = useAppDispatch();
+  const availabilityBlocks = useAppSelector(state => state.availability.AvailabilityBlocks);
+
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [headerDate, setheaderDate] = useState<string>();
   const [weekHeader, setWeekHeader] = useState<TWeek>([]);
-  const [availabilityBlocks, setAvailabilityBlocks] = useState<TAvailabilityBlocks>();
+  // const [availabilityBlocks, setAvailabilityBlocks] = useState<TAvailabilityBlocks>();
 
   //Refactor to update state with selected participants from group
   const [participants, setParticipants] = useState<number[]>([1]);
@@ -68,16 +51,6 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
     
     // Set the days of the week in the header row
     currWeekClick();
-    
-
-    // ==== Create test availability blocks (TO DELETE) ===
-    const availability: TAvailabilityBlocks = [];
-    testEvents.forEach((event, index) => {
-      availability.push(event);
-    })
-    setAvailabilityBlocks(availability);
-    // ====================================================
-
     setIsLoaded(true);
   }, [])
 
@@ -90,7 +63,7 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
         dayFullDate: moment().add(index - moment().day(), 'days').format('MM-DD-YYYY'),
       })
     })
-    console.log(week)
+
     setWeekHeader(week);
     setheaderDate(week[0].dayFullDate);
   }
@@ -126,7 +99,7 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen overflow-y flex-col">
       <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
         <h1 className="text-lg font-medium text-gray-900">
           {isLoaded && <time dateTime={`${moment(headerDate).format('YYYY')}-${moment(headerDate).format('MM')}`}>{moment(headerDate).format('MMMM')} {moment(headerDate).format('YYYY')}</time>}
@@ -557,18 +530,17 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
               >
                 { availabilityBlocks &&
                   availabilityBlocks.map((event, index) => {
+                    
                     if (moment(event.week_of).format('MM-DD-YYYY') === headerDate) {
-                      // Get day of the week to print on corresponding column in grid
-                      const weekday = (event.week_day + 1).toString()
-                      console.log(weekday);
+                      console.log('adding block');
+                      const tBlockClassName = `relative mt-px flex sm:col-start-${event.week_day}`;
                       
                       const AMPM = event.start_time.slice(-2);
-                      let start: number = Number(event.start_time.split(':')[0]);
-                      if (event.start_time === '12:00 AM') start = 0;
-                      if (AMPM === 'PM') start = Number(event.start_time.split(':')[0]) + 12;
-
-                      // return <li key={event.date.concat(event.start_time)} className={`relative mt-px flex sm:col-start-${event.week_day.toString()}`} style={{ gridRow: `${start*12+2} / span 12` }}>
-                      return <li key={event.date.concat(event.start_time)} className={`relative mt-px flex sm:col-start-${weekday}`} style={{ gridRow: `${start*12+2} / span 12` }}>
+                      let start: number = Number(event.start_time.split(':')[0]);                      
+                      if (start === 12) start -= 12;
+                      if (AMPM === 'PM') start += 12;
+                      
+                      return <li key={event.date.concat(event.start_time)} className={tBlockClassName} style={{ gridRow: `${start*12+2} / span 12` }}>
                         <a
                           href="#"
                           className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
