@@ -3,7 +3,6 @@ import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalI
 import React, { useState, useEffect, useRef, RefCallback } from 'react';
 import moment = require('moment');
 import { useAppSelector, useAppDispatch } from '../hooks';
-import { addAvailability } from '../slicers/availabilitySlice';
 
 type TWeek = IDay[];
 
@@ -13,16 +12,25 @@ interface IDay {
   dayFullDate: string,
 }
 
-type TAvailabilityBlocks = ITimeBlock[];
-
-interface ITimeBlock {
-  week_of: string,
-  date: string,
-  week_day: number,
-  start_time: string,
+interface IColClassNames {
+  'Sunday': string,
+  'Monday': string,
+  'Tuesday': string,
+  'Wednesday': string,
+  'Thursday': string,
+  'Friday': string,
+  'Saturyda': string,
 }
 
-
+const columnsClassName = {
+  'Sunday': 'relative mt-px flex sm:col-start-1',
+  'Monday': 'relative mt-px flex sm:col-start-2',
+  'Tuesday': 'relative mt-px flex sm:col-start-3',
+  'Wednesday': 'relative mt-px flex sm:col-start-4',
+  'Thursday': 'relative mt-px flex sm:col-start-5',
+  'Friday': 'relative mt-px flex sm:col-start-6',
+  'Saturyda': 'relative mt-px flex sm:col-start-7',
+}
 
 export default function Calendar ({ type, open, setOpen } : { type: any, open: boolean, setOpen: any }) {
   const dispatch = useAppDispatch();
@@ -533,14 +541,18 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
                     
                     if (moment(event.week_of).format('MM-DD-YYYY') === headerDate) {
                       console.log('adding block');
-                      const tBlockClassName = `relative mt-px flex sm:col-start-${event.week_day}`;
+                      console.log(event.week_day);
+                      console.log(typeof event.week_day);
+                      const tBlockClassName = columnsClassName[moment(event.date).format('dddd') as keyof IColClassNames];
+                      console.log(tBlockClassName);
                       
                       const AMPM = event.start_time.slice(-2);
                       let start: number = Number(event.start_time.split(':')[0]);                      
                       if (start === 12) start -= 12;
                       if (AMPM === 'PM') start += 12;
                       
-                      return <li key={event.date.concat(event.start_time)} className={tBlockClassName} style={{ gridRow: `${start*12+2} / span 12` }}>
+                      // return <AvailabilityBlock block={event} col={event.week_day.toString()}/>
+                      return <li key={event.date.concat(event.start_time)} className={columnsClassName[moment(event.date).format('dddd') as keyof IColClassNames]} style={{ gridRow: `${start*12+2} / span 12` }}>
                         <a
                           href="#"
                           className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"

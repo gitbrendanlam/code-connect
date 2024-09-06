@@ -7,7 +7,7 @@ interface AvailabilityState {
   AvailabilityBlocks: ITimeBlock[]
 }
 
-interface ITimeBlock {
+export interface ITimeBlock {
   week_of: string,
   date: string,
   week_day: number,

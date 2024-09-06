@@ -9,14 +9,6 @@ export default function Example() {
   const dispatch = useAppDispatch();
   const availabilityBlocks = useAppSelector(state => state.availability.AvailabilityBlocks);
 
-  interface DeleteEvent extends EventTarget {
-    value: number
-  }
-
-  interface DeleteMouseEvent extends React.MouseEventHandler<HTMLButtonElement> {
-    currentTarget: DeleteEvent
-  }
-
   const deleteBlock = (index: number) => {
     (() => dispatch(deleteAvailability(index)))();
   }
@@ -53,7 +45,6 @@ export default function Example() {
                   </div>
               </div>
               <button type="button" 
-                value={index}
                 className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
                 onClick={() => deleteBlock(index)}
                 >
