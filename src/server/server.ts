@@ -70,23 +70,24 @@ const calendar = google.calendar({
 app.use('/api/availability', require('./routes/availabilityRouter'));
 
 // POST route to create an event
-app.post('/create-event', async (req: Request, res: Response) => {
+app.post('/api/create-event', async (req: Request, res: Response) => {
   try {
     // Destructure the incoming request body to get individual fields
-    const { summary, location, description, start, end, recurrence, attendees, reminders, colorId }: EventRequestBody = req.body;
-
+    let { summary, location, description, start, end, recurrence, attendees, reminders, colorId }: EventRequestBody = req.body;
+    console.log('request received @ /api/create-event', req.body);
+   
     // Construct the event object using the destructured values
     const event: calendar_v3.Schema$Event = {
       summary,
       location,
       description,
       start: {
-        dateTime: start.dateTime,
-        timeZone: start.timeZone
+        dateTime: start.dateTime + 'Z',
+        timeZone: 'America/Chicago'
       },
       end: {
-        dateTime: end.dateTime,
-        timeZone: end.timeZone
+        dateTime: end.dateTime + 'Z',
+        timeZone: 'America/Chicago'
       },
       recurrence,
       attendees,
@@ -109,6 +110,47 @@ app.post('/create-event', async (req: Request, res: Response) => {
       return res.status(500).send('There was an error creating the event.');
     }
   });
+
+app.get('/api/test', (req,res) => {
+  console.log('ACCESSING VIA BUTTON')
+  const data = { message: 'Hello from the backend!' };
+    res.status(200).json(data);
+})
+
+// POST route to create a new group
+app.post('/api/group-form', async (req, res) => {
+
+console.log('POST request made')
+
+  const { group_name, group_description, invites } = req.body;
+
+  try {
+    // Insert the new group into the App_Groups table
+    const result = await pool.query(
+      'INSERT INTO App_Groups (group_name, group_description) VALUES ($1, $2) RETURNING group_id',
+      [group_name, group_description]
+    );
+
+    const groupId = result.rows[0].group_id;
+
+    // Handle invite logic if necessary (e.g., inserting invites into another table)
+    // Example: Insert invites into a Group_Invites table (if it exists)
+    // if (invites && invites.length > 0) {
+    //   const inviteQueries = invites.map((invite : string[]) =>
+    //     pool.query(
+    //       'INSERT INTO Group_Invites (group_id, invitee) VALUES ($1, $2)',
+    //       [groupId, invite]
+    //     )
+    //   );
+    //   await Promise.all(inviteQueries);
+    // }
+
+    res.status(201).json({ message: 'Group created successfully'});
+  } catch (err) {
+    console.error('Error inserting group:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // PostgreSQL connection configuration using ElephantSQL details
 export const pool = new Pool({
@@ -136,8 +178,6 @@ pool.connect((err, client, release) => {
   release();
 });
 
-// Middleware to parse JSON bodies
-app.use(express.json());
 
 // Basic route to test server
 app.get('/', (req: Request, res: Response) => {
