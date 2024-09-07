@@ -107,6 +107,47 @@ app.post('/create-event', async (req: Request, res: Response) => {
     }
   });
 
+app.get('/api/test', (req,res) => {
+  console.log('ACCESSING VIA BUTTON')
+  const data = { message: 'Hello from the backend!' };
+    res.status(200).json(data);
+})
+
+// POST route to create a new group
+app.post('/api/deez', async (req, res) => {
+
+console.log('POST request made')
+
+  const { group_name, group_description, invites } = req.body;
+
+  try {
+    // Insert the new group into the App_Groups table
+    const result = await pool.query(
+      'INSERT INTO App_Groups (group_name, group_description) VALUES ($1, $2) RETURNING group_id',
+      [group_name, group_description]
+    );
+
+    const groupId = result.rows[0].group_id;
+
+    // Handle invite logic if necessary (e.g., inserting invites into another table)
+    // Example: Insert invites into a Group_Invites table (if it exists)
+    // if (invites && invites.length > 0) {
+    //   const inviteQueries = invites.map((invite : string[]) =>
+    //     pool.query(
+    //       'INSERT INTO Group_Invites (group_id, invitee) VALUES ($1, $2)',
+    //       [groupId, invite]
+    //     )
+    //   );
+    //   await Promise.all(inviteQueries);
+    // }
+
+    res.status(201).json({ message: 'Group created successfully'});
+  } catch (err) {
+    console.error('Error inserting group:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // PostgreSQL connection configuration using ElephantSQL details
 const pool = new Pool({
   connectionString: SECRET_KEY,
@@ -133,8 +174,6 @@ pool.connect((err, client, release) => {
   release();
 });
 
-// Middleware to parse JSON bodies
-app.use(express.json());
 
 // Basic route to test server
 app.get('/', (req: Request, res: Response) => {
