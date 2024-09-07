@@ -29,7 +29,7 @@ const GroupForm: React.FC = () => {
 
     try {
       // Post data to the backend
-      const response = await axios.post('/api/deez', {
+      const response = await axios.post('/api/group-form', {
         group_name: groupName,
         group_description: groupDescription,
         invites,

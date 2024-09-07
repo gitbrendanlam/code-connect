@@ -114,7 +114,7 @@ app.get('/api/test', (req,res) => {
 })
 
 // POST route to create a new group
-app.post('/api/deez', async (req, res) => {
+app.post('/api/group-form', async (req, res) => {
 
 console.log('POST request made')
 
