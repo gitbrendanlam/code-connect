@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react';
-import { GROUP } from 'src/server/schema';
+// import { GROUP } from 'src/server/schema';
 
 const GroupForm: React.FC = () => {
   const [groupName, setGroupName] = useState('');

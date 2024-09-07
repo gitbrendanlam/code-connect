@@ -29,6 +29,7 @@ export default function AddAvailabilityForm({ open, setOpen } : { open: boolean,
         start_time: time,
         recurring,
       })))();
+
       setOpen(false);
     }
   }

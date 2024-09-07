@@ -4,13 +4,11 @@ import Calendar from '../components/Calendar';
 import AddAvailabilityForm from './../components/AddAvailbilityForm';
 import Navbar from '../components/Navbar';
 import { useAppSelector, useAppDispatch } from '../hooks';
-import { addAvailability } from '../slicers/availabilitySlice';
+import { ITimeBlock } from '../slicers/availabilitySlice';
 
-const EditAvailabilityPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const availabilityBlocks = useAppSelector(state => state.availability.AvailabilityBlocks);
-  
+const EditAvailabilityPage: React.FC = () => {  
   const [open, setOpen] = useState(false);
+  const [selectBlockIndex, setSelectBlockIndex] = useState(null);
 
   return (
     // <div style={{ textAlign: 'center', padding: '50px' }}>
@@ -18,10 +16,10 @@ const EditAvailabilityPage: React.FC = () => {
       <Navbar/>
       <div className="flex justify-between grow-0">
         <div className='grow w-1/3'>
-          <AvailabilityList/>
+          <AvailabilityList setSelectBlockIndex={setSelectBlockIndex}/>
         </div>
         <div className="w-2/3">
-          <Calendar type={'personal'} open={open} setOpen={setOpen}/>
+          <Calendar type={'personal'} selectBlockIndex={selectBlockIndex} open={open} setOpen={setOpen}/>
           <AddAvailabilityForm open={open} setOpen={setOpen}/>
         </div>      
       </div>

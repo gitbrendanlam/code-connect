@@ -32,7 +32,7 @@ const columnsClassName = {
   'Saturday': 'relative mt-px flex sm:col-start-7',
 }
 
-export default function Calendar ({ type, open, setOpen } : { type: any, open: boolean, setOpen: any }) {
+export default function Calendar ({ type, selectBlockIndex, open, setOpen } : { type: any, selectBlockIndex: number|null, open: boolean, setOpen: any }) {
   const dispatch = useAppDispatch();
   const availabilityBlocks = useAppSelector(state => state.availability.AvailabilityBlocks);
 
@@ -40,7 +40,6 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [headerDate, setheaderDate] = useState<string>();
   const [weekHeader, setWeekHeader] = useState<TWeek>([]);
-  // const [availabilityBlocks, setAvailabilityBlocks] = useState<TAvailabilityBlocks>();
 
   //Refactor to update state with selected participants from group
   const [participants, setParticipants] = useState<number[]>([1]);
@@ -61,6 +60,31 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
     currWeekClick();
     setIsLoaded(true);
   }, [])
+
+  useEffect(() => {
+    
+
+    if (selectBlockIndex) {
+      const selectBlock = availabilityBlocks[selectBlockIndex];
+      const week: TWeek = [];
+      weekHeader.forEach((day, index) => {
+        week.push({
+          dayShortText: days[index],
+          dayDateNum: moment(selectBlock.week_of).add(index, 'days').date(),
+          dayFullDate: moment(selectBlock.week_of).add(index, 'days').format('MM-DD-YYYY'),
+        })
+      })
+      setWeekHeader(week);
+      setheaderDate(week[0].dayFullDate);
+
+      const currentMinute = Number(availabilityBlocks[selectBlockIndex].start_time.split(':')[0]) * 60
+      container.current!.scrollTop =
+      ((container.current!.scrollHeight - containerNav.current!.offsetHeight - containerOffset.current!.offsetHeight) *
+        currentMinute) /
+      1440
+    }
+    
+  },[selectBlockIndex])
 
   const currWeekClick = () => {
     const week: TWeek = [];
@@ -140,7 +164,7 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
             </button>
           </div>
           <div className="hidden md:ml-4 md:flex md:items-center">
-            <Menu as="div" className="relative">
+            {/* <Menu as="div" className="relative">
               <MenuButton
                 type="button"
                 className="flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
@@ -188,7 +212,7 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
                   </MenuItem>
                 </div>
               </MenuItems>
-            </Menu>
+            </Menu> */}
             <div className="ml-6 h-6 w-px bg-gray-300" />
             {type === 'personal' && <button
               type="button"
@@ -198,72 +222,6 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
               Add availability
             </button>}
           </div>
-          <Menu as="div" className="relative ml-6 md:hidden">
-            <MenuButton className="-mx-2 flex items-center rounded-full border border-transparent p-2 text-gray-400 hover:text-gray-500">
-              <span className="sr-only">Open menu</span>
-              <EllipsisHorizontalIcon className="h-5 w-5" aria-hidden="true" />
-            </MenuButton>
-
-            <MenuItems
-              transition
-              className="absolute right-0 z-10 mt-3 w-36 origin-top-right divide-y divide-gray-100 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
-            >
-              <div className="py-1">
-                <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
-                  >
-                    Create event
-                  </a>
-                </MenuItem>
-              </div>
-              <div className="py-1">
-                <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
-                  >
-                    Go to today
-                  </a>
-                </MenuItem>
-              </div>
-              <div className="py-1">
-                <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
-                  >
-                    Day view
-                  </a>
-                </MenuItem>
-                <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
-                  >
-                    Week view
-                  </a>
-                </MenuItem>
-                <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
-                  >
-                    Month view
-                  </a>
-                </MenuItem>
-                <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
-                  >
-                    Year view
-                  </a>
-                </MenuItem>
-              </div>
-            </MenuItems>
-          </Menu>
         </div>
       </header>
       <div ref={container} className="isolate flex flex-auto flex-col overflow-auto bg-white">
@@ -272,33 +230,6 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
             ref={containerNav}
             className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8"
           >
-            {/* <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
-              <button type="button" className="flex flex-col items-center pb-3 pt-2">
-                M <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">10</span>
-              </button>
-              <button type="button" className="flex flex-col items-center pb-3 pt-2">
-                T <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">11</span>
-              </button>
-              <button type="button" className="flex flex-col items-center pb-3 pt-2">
-                W{' '}
-                <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
-                  12
-                </span>
-              </button>
-              <button type="button" className="flex flex-col items-center pb-3 pt-2">
-                T <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">13</span>
-              </button>
-              <button type="button" className="flex flex-col items-center pb-3 pt-2">
-                F <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">14</span>
-              </button>
-              <button type="button" className="flex flex-col items-center pb-3 pt-2">
-                S <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">15</span>
-              </button>
-              <button type="button" className="flex flex-col items-center pb-3 pt-2">
-                S <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">16</span>
-              </button>
-            </div> */}
-
             { weekHeader &&
               <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
               <div className="col-end-1 w-14" />
@@ -322,47 +253,6 @@ export default function Calendar ({ type, open, setOpen } : { type: any, open: b
               }
             </div>
             }
-            {/* <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
-              <div className="col-end-1 w-14" />
-              <div className="flex items-center justify-center py-3">
-                <span>
-                  Mon <span className="items-center justify-center font-semibold text-gray-900">10</span>
-                </span>
-              </div>
-              <div className="flex items-center justify-center py-3">
-                <span>
-                  Tue <span className="items-center justify-center font-semibold text-gray-900">11</span>
-                </span>
-              </div>
-              <div className="flex items-center justify-center py-3">
-                <span className="flex items-baseline">
-                  Wed{' '}
-                  <span className="ml-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
-                    12
-                  </span>
-                </span>
-              </div>
-              <div className="flex items-center justify-center py-3">
-                <span>
-                  Thu <span className="items-center justify-center font-semibold text-gray-900">13</span>
-                </span>
-              </div>
-              <div className="flex items-center justify-center py-3">
-                <span>
-                  Fri <span className="items-center justify-center font-semibold text-gray-900">14</span>
-                </span>
-              </div>
-              <div className="flex items-center justify-center py-3">
-                <span>
-                  Sat <span className="items-center justify-center font-semibold text-gray-900">15</span>
-                </span>
-              </div>
-              <div className="flex items-center justify-center py-3">
-                <span>
-                  Sun <span className="items-center justify-center font-semibold text-gray-900">16</span>
-                </span>
-              </div>
-            </div> */}
           </div>
           <div className="flex flex-auto">
             <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100" />
