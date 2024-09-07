@@ -85,7 +85,7 @@ const CreateEvent: React.FC<CreateEventProps> = ({ isOpen, onClose }) => {
 
     // Send the data to the backend API endpoint
     try {
-      const response = await fetch('/create-event', {
+      const response = await fetch('/api/create-event', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
