@@ -67,23 +67,24 @@ const calendar = google.calendar({
 });
 
 // POST route to create an event
-app.post('/create-event', async (req: Request, res: Response) => {
+app.post('/api/create-event', async (req: Request, res: Response) => {
   try {
     // Destructure the incoming request body to get individual fields
-    const { summary, location, description, start, end, recurrence, attendees, reminders, colorId }: EventRequestBody = req.body;
-
+    let { summary, location, description, start, end, recurrence, attendees, reminders, colorId }: EventRequestBody = req.body;
+    console.log('request received @ /api/create-event', req.body);
+   
     // Construct the event object using the destructured values
     const event: calendar_v3.Schema$Event = {
       summary,
       location,
       description,
       start: {
-        dateTime: start.dateTime,
-        timeZone: start.timeZone
+        dateTime: start.dateTime + 'Z',
+        timeZone: 'America/Chicago'
       },
       end: {
-        dateTime: end.dateTime,
-        timeZone: end.timeZone
+        dateTime: end.dateTime + 'Z',
+        timeZone: 'America/Chicago'
       },
       recurrence,
       attendees,
