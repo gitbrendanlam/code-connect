@@ -7,6 +7,7 @@ import GroupDetails from './pages/GroupDetails';
 import GroupFormPage from './components/GroupForm';
 
 
+import EditAvailabilityPage from './pages/EditAvailabilityPage';
 
 const App: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ const App: React.FC = () => {
         <Route path='/' element={<Home />} />
         <Route path='/dashboard' element={<Dashboard />} />
         <Route path='/groupdetail' element={<GroupDetails />} />
+        <Route path='/my-availability' element={<EditAvailabilityPage />} />
       </Routes>
     </Router>
   );

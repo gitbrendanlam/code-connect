@@ -66,6 +66,9 @@ const calendar = google.calendar({
   auth: oAuth2Client
 });
 
+// routers
+app.use('/api/availability', require('./routes/availabilityRouter'));
+
 // POST route to create an event
 app.post('/api/create-event', async (req: Request, res: Response) => {
   try {
@@ -150,7 +153,7 @@ console.log('POST request made')
 });
 
 // PostgreSQL connection configuration using ElephantSQL details
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: SECRET_KEY,
   ssl: { rejectUnauthorized: false }, // Ensure SSL connection
 });

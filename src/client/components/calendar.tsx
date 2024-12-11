@@ -1,27 +1,465 @@
-import React, { useEffect, useState } from "react";
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
+import React, { useState, useEffect, useRef, RefCallback } from 'react';
+import moment = require('moment');
+import { useAppSelector, useAppDispatch } from '../hooks';
 
-export default function Calendar() {
-  const daysOfWeek: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const dayParts: string[] = ['AM', 'PM'];
-  const timesOfDay: React.JSX.Element[] = [];
+type TWeek = IDay[];
 
-  dayParts.forEach(part => {
-    for ( let i = 1; i < 12; i++ ) {
-      timesOfDay.push(<div>{i.toString().concat(' ', part)}</div>);
+interface IDay {
+  dayShortText: string,
+  dayDateNum: number,
+  dayFullDate: string,
+}
+
+interface IColClassNames {
+  'Sunday': string,
+  'Monday': string,
+  'Tuesday': string,
+  'Wednesday': string,
+  'Thursday': string,
+  'Friday': string,
+  'Saturday': string,
+}
+
+const columnsClassName = {
+  'Sunday': 'relative mt-px flex sm:col-start-1',
+  'Monday': 'relative mt-px flex sm:col-start-2',
+  'Tuesday': 'relative mt-px flex sm:col-start-3',
+  'Wednesday': 'relative mt-px flex sm:col-start-4',
+  'Thursday': 'relative mt-px flex sm:col-start-5',
+  'Friday': 'relative mt-px flex sm:col-start-6',
+  'Saturday': 'relative mt-px flex sm:col-start-7',
+}
+
+export default function Calendar ({ type, selectBlockIndex, open, setOpen } : { type: any, selectBlockIndex: number|null, open: boolean, setOpen: any }) {
+  const dispatch = useAppDispatch();
+  const availabilityBlocks = useAppSelector(state => state.availability.AvailabilityBlocks);
+
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [headerDate, setheaderDate] = useState<string>();
+  const [weekHeader, setWeekHeader] = useState<TWeek>([]);
+
+  //Refactor to update state with selected participants from group
+  const [participants, setParticipants] = useState<number[]>([1]);
+  
+  const container: React.LegacyRef<HTMLDivElement> = useRef<HTMLDivElement>(null);
+  const containerNav: React.LegacyRef<HTMLDivElement> = useRef<HTMLDivElement>(null);
+  const containerOffset:  React.LegacyRef<HTMLDivElement> = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Set the container scroll position based on the current time.
+    const currentMinute = new Date().getHours() * 60
+    container.current!.scrollTop =
+      ((container.current!.scrollHeight - containerNav.current!.offsetHeight - containerOffset.current!.offsetHeight) *
+        currentMinute) /
+      1440
+    
+    // Set the days of the week in the header row
+    currWeekClick();
+    setIsLoaded(true);
+  }, [])
+
+  useEffect(() => {
+    
+
+    if (selectBlockIndex) {
+      const selectBlock = availabilityBlocks[selectBlockIndex];
+      const week: TWeek = [];
+      weekHeader.forEach((day, index) => {
+        week.push({
+          dayShortText: days[index],
+          dayDateNum: moment(selectBlock.week_of).add(index, 'days').date(),
+          dayFullDate: moment(selectBlock.week_of).add(index, 'days').format('MM-DD-YYYY'),
+        })
+      })
+      setWeekHeader(week);
+      setheaderDate(week[0].dayFullDate);
+
+      const currentMinute = Number(availabilityBlocks[selectBlockIndex].start_time.split(':')[0]) * 60
+      container.current!.scrollTop =
+      ((container.current!.scrollHeight - containerNav.current!.offsetHeight - containerOffset.current!.offsetHeight) *
+        currentMinute) /
+      1440
     }
-  })
+    
+  },[selectBlockIndex])
+
+  const currWeekClick = () => {
+    const week: TWeek = [];
+    days.forEach((day, index) => {
+      week.push({
+        dayShortText: days[index],
+        dayDateNum: index - moment().day() + moment().date(),
+        dayFullDate: moment().add(index - moment().day(), 'days').format('MM-DD-YYYY'),
+      })
+    })
+
+    setWeekHeader(week);
+    setheaderDate(week[0].dayFullDate);
+  }
+
+  const prevWeekClick = () => {
+    const week: TWeek = [];
+    weekHeader.forEach((day, index) => {
+      week.push({
+        dayShortText: days[index],
+        dayDateNum: moment(day.dayFullDate).subtract(7, 'days').date(),
+        dayFullDate: moment(day.dayFullDate).subtract(7, 'days').format('MM-DD-YYYY'),
+      })
+    })
+    setWeekHeader(week);
+    setheaderDate(week[0].dayFullDate);
+  }
+
+  const nextWeekClick = () => {
+    const week: TWeek = [];
+    weekHeader.forEach((day, index) => {
+      week.push({
+        dayShortText: days[index],
+        dayDateNum: moment(day.dayFullDate).add(7, 'days').date(),
+        dayFullDate: moment(day.dayFullDate).add(7, 'days').format('MM-DD-YYYY'),
+      })
+    })
+    setWeekHeader(week);
+    setheaderDate(week[0].dayFullDate);
+  }
+
+  const openAvailabilityModal = () => {
+    open ? setOpen(false) : setOpen(true);
+  }
 
   return (
-    <div>
-      <div>
-        {
-          daysOfWeek.map(day => <div>{day[0]}</div>)
-        }
-      </div>
-      <div>
-        {
-          timesOfDay
-        }
+    <div className="flex h-screen overflow-y flex-col">
+      <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
+        <h1 className="text-lg font-medium text-gray-900">
+          {isLoaded && <time dateTime={`${moment(headerDate).format('YYYY')}-${moment(headerDate).format('MM')}`}>{moment(headerDate).format('MMMM')} {moment(headerDate).format('YYYY')}</time>}
+        </h1>
+        <div className="flex items-center">
+          <div className="relative flex items-center rounded-md bg-white shadow-sm md:items-stretch">
+            <button
+              type="button"
+              className="flex h-9 w-12 items-center justify-center rounded-l-md border-y border-l border-gray-300 pr-1 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:pr-0 md:hover:bg-gray-50"
+              onClick={prevWeekClick}
+            >
+              <span className="sr-only">Previous week</span>
+              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="hidden border-y border-gray-300 px-3.5 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:relative md:block"
+              onClick={currWeekClick}
+            >
+              Today
+            </button>
+            <span className="relative -mx-px h-5 w-px bg-gray-300 md:hidden" />
+            <button
+              type="button"
+              className="flex h-9 w-12 items-center justify-center rounded-r-md border-y border-r border-gray-300 pl-1 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:pl-0 md:hover:bg-gray-50"
+              onClick={nextWeekClick}
+            >
+              <span className="sr-only">Next week</span>
+              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="hidden md:ml-4 md:flex md:items-center">
+            {/* <Menu as="div" className="relative">
+              <MenuButton
+                type="button"
+                className="flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              >
+                Week view
+                <ChevronDownIcon className="-mr-1 h-5 w-5 text-gray-400" aria-hidden="true" />
+              </MenuButton>
+
+              <MenuItems
+                transition
+                className="absolute right-0 z-10 mt-3 w-36 origin-top-right overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+              >
+                <div className="py-1">
+                  <MenuItem>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
+                    >
+                      Day view
+                    </a>
+                  </MenuItem>
+                  <MenuItem>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
+                    >
+                      Week view
+                    </a>
+                  </MenuItem>
+                  <MenuItem>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
+                    >
+                      Month view
+                    </a>
+                  </MenuItem>
+                  <MenuItem>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
+                    >
+                      Year view
+                    </a>
+                  </MenuItem>
+                </div>
+              </MenuItems>
+            </Menu> */}
+            <div className="ml-6 h-6 w-px bg-gray-300" />
+            {type === 'personal' && <button
+              type="button"
+              className="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              onClick={openAvailabilityModal}
+            >
+              Add availability
+            </button>}
+          </div>
+        </div>
+      </header>
+      <div ref={container} className="isolate flex flex-auto flex-col overflow-auto bg-white">
+        <div style={{ width: '165%' }} className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full">
+          <div
+            ref={containerNav}
+            className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8"
+          >
+            { weekHeader &&
+              <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
+              <div className="col-end-1 w-14" />
+              {
+                weekHeader.map((day, index) => {
+                  if (day.dayFullDate === moment().format('MM-DD-YYYY')) return <div className="flex items-center justify-center py-3" key={day.dayShortText.concat(day.dayDateNum.toString())}>
+                    <span className="flex items-baseline">
+                      {day.dayShortText}{' '}
+                      <span className="ml-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
+                        {day.dayDateNum}
+                      </span>
+                    </span>
+                  </div>
+                  else
+                  return <div className="flex items-center justify-center py-3" key={day.dayShortText.concat(day.dayDateNum.toString())}>
+                    <span>
+                      {day.dayShortText} <span className="items-center justify-center font-semibold text-gray-900">{day.dayDateNum}</span>
+                    </span>
+                  </div>
+                })
+              }
+            </div>
+            }
+          </div>
+          <div className="flex flex-auto">
+            <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100" />
+            <div className="grid flex-auto grid-cols-1 grid-rows-1">
+              {/* Horizontal lines */}
+              <div
+                className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
+                style={{ gridTemplateRows: 'repeat(48, minmax(3.5rem, 1fr))' }}
+              > 
+                <div ref={containerOffset} className="row-end-1 h-7"></div>
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    12AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    1AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    2AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    3AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    4AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    5AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    6AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    7AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    8AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    9AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    10AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    11AM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    12PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    1PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    2PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    3PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    4PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    5PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    6PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    7PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    8PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    9PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    10PM
+                  </div>
+                </div>
+                <div />
+                <div>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
+                    11PM
+                  </div>
+                </div>
+                <div />
+              </div>
+
+              {/* Vertical lines */}
+              <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7">
+                <div className="col-start-1 row-span-full" />
+                <div className="col-start-2 row-span-full" />
+                <div className="col-start-3 row-span-full" />
+                <div className="col-start-4 row-span-full" />
+                <div className="col-start-5 row-span-full" />
+                <div className="col-start-6 row-span-full" />
+                <div className="col-start-7 row-span-full" />
+                <div className="col-start-8 row-span-full w-8" />
+              </div>
+
+              {/* Events */}
+              <ol
+                className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8"
+                style={{ gridTemplateRows: '1.75rem repeat(288, minmax(0, 1fr)) auto' }}
+              >
+                { availabilityBlocks &&
+                  availabilityBlocks.map((event, index) => {
+                    
+                    if (moment(event.week_of).format('MM-DD-YYYY') === headerDate) {
+                      console.log('adding block');
+                      console.log(event.week_day);
+                      console.log(typeof event.week_day);
+                      const tBlockClassName = columnsClassName[moment(event.date).format('dddd') as keyof IColClassNames];
+                      console.log(tBlockClassName);
+                      
+                      const AMPM = event.start_time.slice(-2);
+                      let start: number = Number(event.start_time.split(':')[0]);                      
+                      if (start === 12) start -= 12;
+                      if (AMPM === 'PM') start += 12;
+                      
+                      // return <AvailabilityBlock block={event} col={event.week_day.toString()}/>
+                      return <li key={event.date.concat(event.start_time)} className={columnsClassName[moment(event.date).format('dddd') as keyof IColClassNames]} style={{ gridRow: `${start*12+2} / span 12` }}>
+                        <a
+                          href="#"
+                          className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
+                        >
+                          <p className="order-1 font-semibold text-blue-700">{participants.length} Availabile </p>
+                          <p className="text-blue-500 group-hover:text-blue-700">
+                            <time dateTime={`${moment(event.date).format('YYYY-MM-DD')}T${event.start_time}`}>{event.start_time}</time>
+                          </p>
+                        </a>
+                      </li>
+                    } 
+                  })
+                }
+              </ol>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

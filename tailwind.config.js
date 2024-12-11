@@ -10,6 +10,9 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
   darkMode: ['selector', '[data-mode="dark"]'],
-};
+}
+
